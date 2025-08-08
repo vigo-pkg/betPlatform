@@ -7,22 +7,8 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: production
-      - key: SPRING_DATASOURCE_URL
-        fromDatabase:
-          name: betting-postgres
-          property: connectionString
-      - key: SPRING_DATASOURCE_USERNAME
-        fromDatabase:
-          name: betting-postgres
-          property: user
-      - key: SPRING_DATASOURCE_PASSWORD
-        fromDatabase:
-          name: betting-postgres
-          property: password
       - key: JWT_SECRET
         generateValue: true
-      - key: SERVER_PORT
-        value: 8080
 
   # PostgreSQL Database
   - type: pserv
