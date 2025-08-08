@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Детали пари - Betting App</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .bet-detail-card {
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 15px;
+        }
+        
+        .status-badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+        }
+        
+        .participant-card {
+            border-left: 4px solid #007bff;
+            background-color: #f8f9fa;
+        }
+        
+        .observer-card {
+            border-left: 4px solid #6c757d;
+            background-color: #f8f9fa;
+        }
+        
+        .vote-section {
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        
+        .vote-button {
+            min-width: 120px;
+        }
+        
+        .comment-section {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .action-buttons {
+            position: sticky;
+            bottom: 0;
+            background: white;
+            border-top: 1px solid #dee2e6;
+            padding: 1rem 0;
+        }
+        
+        .bet-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .info-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .info-label {
+            font-size: 0.8rem;
+            color: #6c757d;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-handshake me-2"></i>Betting App
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3" id="userInfo">
+                    <i class="fas fa-user me-1"></i><span id="userEmail"></span>
+                </span>
+                <button class="btn btn-outline-light btn-sm" onclick="goBack()">
+                    <i class="fas fa-arrow-left me-1"></i>Назад
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    <div class="container mt-4">
+        <!-- Загрузка -->
+        <div id="loadingSection" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Загрузка...</span>
+            </div>
+            <p class="mt-3">Загрузка пари...</p>
+        </div>
+
+        <!-- Детали пари -->
+        <div id="betDetailSection" class="d-none">
+            <!-- Заголовок пари -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card bet-detail-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h2 class="card-title mb-2" id="betTitle"></h2>
+                                    <p class="card-text text-muted" id="betDescription"></p>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge status-badge" id="betStatus"></span>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            <span id="betStartDate"></span>
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Информация о пари -->
+                            <div class="bet-info-grid mb-4">
+                                <div class="info-item">
+                                    <div class="info-label">Создатель</div>
+                                    <div class="info-value" id="betCreator"></div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Длительность</div>
+                                    <div class="info-value" id="betDuration"></div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Участник</div>
+                                    <div class="info-value" id="betParticipant"></div>
+                                </div>
+                                <div class="info-item">
+                                    <div class="info-label">Наблюдатель</div>
+                                    <div class="info-value" id="betObserver"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Участники -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card participant-card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-user-friends me-2"></i>Участник
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="participantInfo">
+                                <p class="text-muted">Участник не назначен</p>
+                                <button class="btn btn-primary btn-sm" onclick="joinAsParticipant()" id="joinParticipantBtn">
+                                    <i class="fas fa-user-plus me-1"></i>Присоединиться как участник
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card observer-card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-eye me-2"></i>Наблюдатель
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="observerInfo">
+                                <p class="text-muted">Наблюдатель не назначен</p>
+                                <button class="btn btn-secondary btn-sm" onclick="joinAsObserver()" id="joinObserverBtn">
+                                    <i class="fas fa-eye me-1"></i>Присоединиться как наблюдатель
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Голосование -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-vote-yea me-2"></i>Голосование
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="vote-section">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="text-center mb-3">
+                                            <h6>За</h6>
+                                            <div class="progress mb-2">
+                                                <div class="progress-bar bg-success" id="voteForProgress" style="width: 0%"></div>
+                                            </div>
+                                            <span id="voteForCount">0 голосов</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="text-center mb-3">
+                                            <h6>Против</h6>
+                                            <div class="progress mb-2">
+                                                <div class="progress-bar bg-danger" id="voteAgainstProgress" style="width: 0%"></div>
+                                            </div>
+                                            <span id="voteAgainstCount">0 голосов</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="text-center mt-3" id="voteButtons">
+                                    <button class="btn btn-success vote-button me-2" onclick="vote(true)">
+                                        <i class="fas fa-thumbs-up me-1"></i>За
+                                    </button>
+                                    <button class="btn btn-danger vote-button" onclick="vote(false)">
+                                        <i class="fas fa-thumbs-down me-1"></i>Против
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Комментарии -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">
+                                <i class="fas fa-comments me-2"></i>Комментарии
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="comment-section mb-3" id="commentsSection">
+                                <p class="text-muted">Комментариев пока нет</p>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="commentInput" placeholder="Добавить комментарий...">
+                                <button class="btn btn-primary" onclick="addComment()">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Действия -->
+            <div class="action-buttons">
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <button class="btn btn-outline-secondary me-2" onclick="goBack()">
+                                    <i class="fas fa-arrow-left me-1"></i>Назад
+                                </button>
+                                <button class="btn btn-outline-info" onclick="shareBet()" id="shareBtn">
+                                    <i class="fas fa-share me-1"></i>Поделиться
+                                </button>
+                            </div>
+                            <div id="adminActions">
+                                <button class="btn btn-warning me-2" onclick="resolveConflict()" id="resolveBtn" style="display: none;">
+                                    <i class="fas fa-gavel me-1"></i>Разрешить конфликт
+                                </button>
+                                <button class="btn btn-success" onclick="markAsFinished()" id="finishBtn" style="display: none;">
+                                    <i class="fas fa-check me-1"></i>Завершить пари
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ошибка -->
+        <div id="errorSection" class="d-none">
+            <div class="alert alert-danger" role="alert">
+                <h4 class="alert-heading">Ошибка!</h4>
+                <p id="errorMessage"></p>
+                <hr>
+                <button class="btn btn-outline-danger" onclick="goBack()">
+                    <i class="fas fa-arrow-left me-1"></i>Вернуться назад
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальные окна -->
+    <!-- Модальное окно разрешения конфликта -->
+    <div class="modal fade" id="resolveModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Разрешить конфликт</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Кто выиграл пари?</p>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" onclick="setWinner('creator')">
+                            <i class="fas fa-user me-1"></i>Создатель
+                        </button>
+                        <button class="btn btn-outline-success" onclick="setWinner('participant')">
+                            <i class="fas fa-user-friends me-1"></i>Участник
+                        </button>
+                        <button class="btn btn-outline-secondary" onclick="setWinner('draw')">
+                            <i class="fas fa-handshake me-1"></i>Ничья
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Модальное окно завершения пари -->
+    <div class="modal fade" id="finishModal" tabindex="-1">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Завершить пари</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Вы уверены, что хотите завершить это пари?</p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success" onclick="confirmFinish()">
+                        <i class="fas fa-check me-1"></i>Да, завершить
+                    </button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Отмена
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="bet-detail.js"></script>
+</body>
+</html> 

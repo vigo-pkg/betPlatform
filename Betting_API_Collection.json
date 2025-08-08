@@ -1,0 +1,903 @@
+{
+	"info": {
+		"_postman_id": "betting-api-collection",
+		"name": "Betting API - End to End Testing",
+		"description": "Полная коллекция для тестирования API приложения для пари",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Аутентификация",
+			"item": [
+				{
+					"name": "Создание тестовых пользователей",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": ""
+						},
+						"url": {
+							"raw": "{{base_url}}/test/create-users",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"test",
+								"create-users"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Регистрация нового пользователя",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"newuser@test.com\",\n    \"password\": \"password123\",\n    \"firstName\": \"Новый\",\n    \"lastName\": \"Пользователь\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Вход пользователя",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('auth_token', response.token);",
+									"    pm.environment.set('user_id', response.user.id);",
+									"    pm.environment.set('user_email', response.user.email);",
+									"    console.log('Токен сохранен:', response.token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user1@test.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Валидация токена",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/auth/validate",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"validate"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Тесты для аутентификации и авторизации"
+		},
+		{
+			"name": "2. Управление пари",
+			"item": [
+				{
+					"name": "Получение списка пари",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Создание нового пари",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('bet_id', response.id);",
+									"    console.log('Пари создано с ID:', response.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"Тестовое пари для Postman\",\n    \"description\": \"Описание пари для тестирования API\",\n    \"startDate\": \"2025-08-09T16:00:00\",\n    \"duration\": 24\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Получение пари по ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Тесты для основных операций с пари"
+		},
+		{
+			"name": "3. Участие в пари",
+			"item": [
+				{
+					"name": "Вход второго пользователя",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('auth_token_user2', response.token);",
+									"    pm.environment.set('user2_id', response.user.id);",
+									"    console.log('Токен второго пользователя сохранен');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user2@test.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Присоединение как участник",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token_user2}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"role\": \"PARTICIPANT\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}/join",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Вход третьего пользователя",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    pm.environment.set('auth_token_user3', response.token);",
+									"    pm.environment.set('user3_id', response.user.id);",
+									"    console.log('Токен третьего пользователя сохранен');",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"user3@test.com\",\n    \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Присоединение как наблюдатель",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token_user3}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"role\": \"OBSERVER\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}/join",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}",
+								"join"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Тесты для присоединения к пари"
+		},
+		{
+			"name": "4. Голосование",
+			"item": [
+				{
+					"name": "Получение статистики голосов",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}/votes",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}",
+								"votes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Голосование за (участник)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token_user2}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"vote\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}/vote",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}",
+								"vote"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Голосование против (наблюдатель)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token_user3}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"vote\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}/vote",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}",
+								"vote"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Тесты для системы голосования"
+		},
+		{
+			"name": "5. Комментарии",
+			"item": [
+				{
+					"name": "Получение комментариев",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}/comments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Добавление комментария (участник)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token_user2}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"Отличное пари! Я уверен в победе!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}/comments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Добавление комментария (наблюдатель)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token_user3}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"text\": \"Интересно наблюдать за этим пари!\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}/comments",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}",
+								"comments"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Тесты для системы комментариев"
+		},
+		{
+			"name": "6. Управление статусами",
+			"item": [
+				{
+					"name": "Завершение пари (создатель)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}/finish",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}",
+								"finish"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Разрешение конфликта (создатель)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"winner\": \"creator\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}/resolve",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}",
+								"resolve"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Тесты для управления статусами пари"
+		},
+		{
+			"name": "7. Ошибки и валидация",
+			"item": [
+				{
+					"name": "Попытка входа с неверными данными",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"wrong@test.com\",\n    \"password\": \"wrongpassword\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Попытка доступа без токена",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/bets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Попытка присоединиться к несуществующему пари",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token_user2}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"role\": \"PARTICIPANT\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bets/99999/join",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"99999",
+								"join"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Попытка создать пари с неверными данными",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"title\": \"\",\n    \"description\": \"\",\n    \"startDate\": \"2025-08-08T10:00:00\",\n    \"duration\": -1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/bets",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Тесты для проверки обработки ошибок"
+		},
+		{
+			"name": "8. Дополнительные тесты",
+			"item": [
+				{
+					"name": "Получение списка пари с фильтрацией по статусу",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bets?status=OPEN",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets"
+							],
+							"query": [
+								{
+									"key": "status",
+									"value": "OPEN"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Получение списка пари с поиском",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bets?search=Postman",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets"
+							],
+							"query": [
+								{
+									"key": "search",
+									"value": "Postman"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Удаление пари (создатель)",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/bets/{{bet_id}}",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"bets",
+								"{{bet_id}}"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"description": "Дополнительные тесты функциональности"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "auth_token_user2",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "auth_token_user3",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "bet_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user2_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user3_id",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "user_email",
+			"value": "",
+			"type": "string"
+		}
+	]
+} 

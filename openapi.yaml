@@ -1,0 +1,658 @@
+openapi: 3.0.3
+info:
+  title: Betting API
+  description: REST API для системы заключения пари между пользователями
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@betting.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8080/api
+    description: Development server
+  - url: https://api.betting.com
+    description: Production server
+
+paths:
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Регистрация пользователя
+      description: Создает нового пользователя в системе
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: Пользователь успешно зарегистрирован
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          description: Неверные данные запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Вход в систему
+      description: Аутентифицирует пользователя и возвращает токены
+      operationId: loginUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Успешный вход
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Неверные учетные данные
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/refresh:
+    post:
+      tags:
+        - Authentication
+      summary: Обновление токена
+      description: Обновляет access token используя refresh token
+      operationId: refreshToken
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Токен успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '401':
+          description: Неверный refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Выход из системы
+      description: Деактивирует токены пользователя
+      operationId: logoutUser
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Успешный выход
+
+  /bets:
+    get:
+      tags:
+        - Bets
+      summary: Получение списка пари
+      description: Возвращает список всех пари с пагинацией и фильтрацией
+      operationId: getBets
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы (начиная с 0)
+          required: false
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Размер страницы
+          required: false
+          schema:
+            type: integer
+            default: 20
+        - name: status
+          in: query
+          description: Фильтр по статусу
+          required: false
+          schema:
+            type: string
+            enum: [OPEN, IN_PROGRESS, IMPLEMENTED, CONFLICT, RESOLVED, FINISHED]
+        - name: search
+          in: query
+          description: Поиск по названию или описанию
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Список пари
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BetResponse'
+                  totalElements:
+                    type: integer
+                  totalPages:
+                    type: integer
+                  size:
+                    type: integer
+                  number:
+                    type: integer
+
+    post:
+      tags:
+        - Bets
+      summary: Создание пари
+      description: Создает новое пари
+      operationId: createBet
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBetRequest'
+      responses:
+        '201':
+          description: Пари успешно создано
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BetResponse'
+        '400':
+          description: Неверные данные запроса
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bets/{id}:
+    get:
+      tags:
+        - Bets
+      summary: Получение пари по ID
+      description: Возвращает детальную информацию о пари
+      operationId: getBet
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пари
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Информация о пари
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BetResponse'
+        '404':
+          description: Пари не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - Bets
+      summary: Удаление пари
+      description: Удаляет пари (только создатель может удалить)
+      operationId: deleteBet
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пари
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: Пари успешно удалено
+        '403':
+          description: Нет прав для удаления
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Пари не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bets/{id}/join:
+    post:
+      tags:
+        - Bets
+      summary: Присоединение к пари как участник
+      description: Присоединяет пользователя к пари как участника
+      operationId: joinAsParticipant
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пари
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешно присоединился к пари
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BetResponse'
+        '400':
+          description: Нельзя присоединиться к пари
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Пари не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bets/{id}/join-observer:
+    post:
+      tags:
+        - Bets
+      summary: Присоединение к пари как наблюдатель
+      description: Присоединяет пользователя к пари как наблюдателя
+      operationId: joinAsObserver
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пари
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Успешно присоединился как наблюдатель
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BetResponse'
+        '400':
+          description: Нельзя присоединиться как наблюдатель
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Пари не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bets/{id}/vote:
+    post:
+      tags:
+        - Bets
+      summary: Голосование
+      description: Позволяет участникам проголосовать за результат пари
+      operationId: vote
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пари
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VoteRequest'
+      responses:
+        '200':
+          description: Голос успешно засчитан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BetResponse'
+        '400':
+          description: Нельзя проголосовать
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Пари не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /bets/{id}/resolve:
+    put:
+      tags:
+        - Bets
+      summary: Разрешение конфликта
+      description: Позволяет наблюдателю разрешить конфликт в пари
+      operationId: resolveConflict
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID пари
+          schema:
+            type: integer
+        - name: winnerId
+          in: query
+          required: true
+          description: ID победителя
+          schema:
+            type: integer
+        - name: comment
+          in: query
+          required: false
+          description: Комментарий к решению
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Конфликт успешно разрешен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BetResponse'
+        '400':
+          description: Нельзя разрешить конфликт
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Нет прав для разрешения конфликта
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Пари не найдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+          example: "user@example.com"
+        password:
+          type: string
+          minLength: 6
+          description: Пароль пользователя
+          example: "password123"
+        firstName:
+          type: string
+          maxLength: 50
+          description: Имя пользователя
+          example: "Иван"
+        lastName:
+          type: string
+          maxLength: 50
+          description: Фамилия пользователя
+          example: "Иванов"
+        phoneNumber:
+          type: string
+          maxLength: 20
+          description: Номер телефона
+          example: "+79001234567"
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+          example: "user@example.com"
+        password:
+          type: string
+          description: Пароль пользователя
+          example: "password123"
+
+    AuthResponse:
+      type: object
+      properties:
+        accessToken:
+          type: string
+          description: JWT access token
+        refreshToken:
+          type: string
+          description: JWT refresh token
+        tokenType:
+          type: string
+          default: "Bearer"
+        expiresIn:
+          type: integer
+          description: Время жизни токена в миллисекундах
+        user:
+          $ref: '#/components/schemas/UserResponse'
+
+    UserResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID пользователя
+        email:
+          type: string
+          format: email
+          description: Email пользователя
+        firstName:
+          type: string
+          description: Имя пользователя
+        lastName:
+          type: string
+          description: Фамилия пользователя
+        phoneNumber:
+          type: string
+          description: Номер телефона
+        fullName:
+          type: string
+          description: Полное имя пользователя
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата создания
+        lastLoginAt:
+          type: string
+          format: date-time
+          description: Дата последнего входа
+
+    CreateBetRequest:
+      type: object
+      required:
+        - title
+        - description
+        - startDate
+        - duration
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          description: Название пари
+          example: "Кто выиграет матч"
+        description:
+          type: string
+          maxLength: 1000
+          description: Описание пари
+          example: "Матч между командой А и командой Б"
+        startDate:
+          type: string
+          format: date-time
+          description: Дата и время начала пари
+          example: "2024-12-31T10:00:00"
+        duration:
+          type: integer
+          minimum: 1
+          maximum: 720
+          description: Длительность в часах
+          example: 48
+
+    VoteRequest:
+      type: object
+      required:
+        - result
+      properties:
+        result:
+          type: string
+          enum: [WIN, LOSE]
+          description: Результат голосования
+          example: "WIN"
+        comment:
+          type: string
+          description: Комментарий к голосу
+          example: "Я выиграл пари"
+
+    BetResponse:
+      type: object
+      properties:
+        id:
+          type: integer
+          description: ID пари
+        title:
+          type: string
+          description: Название пари
+        description:
+          type: string
+          description: Описание пари
+        startDate:
+          type: string
+          format: date-time
+          description: Дата начала
+        duration:
+          type: integer
+          description: Длительность в часах
+        status:
+          type: string
+          enum: [OPEN, IN_PROGRESS, IMPLEMENTED, CONFLICT, RESOLVED, FINISHED]
+          description: Статус пари
+        creator:
+          $ref: '#/components/schemas/UserResponse'
+        participant:
+          $ref: '#/components/schemas/UserResponse'
+        observer:
+          $ref: '#/components/schemas/UserResponse'
+        winner:
+          $ref: '#/components/schemas/UserResponse'
+        createdAt:
+          type: string
+          format: date-time
+          description: Дата создания
+        updatedAt:
+          type: string
+          format: date-time
+          description: Дата последнего обновления
+        resolvedAt:
+          type: string
+          format: date-time
+          description: Дата разрешения
+        votes:
+          type: object
+          additionalProperties:
+            type: string
+            enum: [WIN, LOSE]
+          description: Голоса участников
+        shareUrl:
+          type: string
+          description: Уникальная ссылка на пари
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Время ошибки
+        status:
+          type: integer
+          description: HTTP статус код
+        error:
+          type: string
+          description: Тип ошибки
+        message:
+          type: string
+          description: Сообщение об ошибке
+        path:
+          type: string
+          description: Путь запроса
+
+tags:
+  - name: Authentication
+    description: Операции аутентификации и авторизации
+  - name: Bets
+    description: Операции с пари 

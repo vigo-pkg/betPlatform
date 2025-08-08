@@ -1,0 +1,547 @@
+{
+	"info": {
+		"_postman_id": "betting-api-collection",
+		"name": "Betting API",
+		"description": "REST API для системы заключения пари",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user1@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Иван\",\n  \"lastName\": \"Иванов\",\n  \"phoneNumber\": \"+79001234567\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "Login User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user1@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"login"
+							]
+						}
+					}
+				},
+				{
+					"name": "Refresh Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{refreshToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/refresh",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"refresh"
+							]
+						}
+					}
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/auth/logout",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"logout"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Bets",
+			"item": [
+				{
+					"name": "Create Bet",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Кто выиграет матч\",\n  \"description\": \"Матч между командой А и командой Б состоится в субботу\",\n  \"startDate\": \"2024-12-31T10:00:00\",\n  \"duration\": 48\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/bets",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bets"
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Bets",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bets?page=0&size=20&status=OPEN",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bets"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "20"
+								},
+								{
+									"key": "status",
+									"value": "OPEN"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Bet by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bets/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bets",
+								"1"
+							]
+						}
+					}
+				},
+				{
+					"name": "Join Bet as Participant",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bets/1/join",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bets",
+								"1",
+								"join"
+							]
+						}
+					}
+				},
+				{
+					"name": "Join Bet as Observer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bets/1/join-observer",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bets",
+								"1",
+								"join-observer"
+							]
+						}
+					}
+				},
+				{
+					"name": "Vote for Winner",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"result\": \"WIN\",\n  \"comment\": \"Я выиграл пари\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/bets/1/vote",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bets",
+								"1",
+								"vote"
+							]
+						}
+					}
+				},
+				{
+					"name": "Resolve Conflict",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bets/1/resolve?winnerId=2&comment=Судья принял решение в пользу стороны 1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bets",
+								"1",
+								"resolve"
+							],
+							"query": [
+								{
+									"key": "winnerId",
+									"value": "2"
+								},
+								{
+									"key": "comment",
+									"value": "Судья принял решение в пользу стороны 1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete Bet",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/bets/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bets",
+								"1"
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Test Data Setup",
+			"item": [
+				{
+					"name": "Register Test Users",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user1@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Иван\",\n  \"lastName\": \"Иванов\",\n  \"phoneNumber\": \"+79001234567\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "Register User 2",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user2@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Петр\",\n  \"lastName\": \"Петров\",\n  \"phoneNumber\": \"+79001234568\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "Register User 3",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user3@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Алексей\",\n  \"lastName\": \"Сидоров\",\n  \"phoneNumber\": \"+79001234569\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "Register User 4",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user4@example.com\",\n  \"password\": \"password123\",\n  \"firstName\": \"Мария\",\n  \"lastName\": \"Козлова\",\n  \"phoneNumber\": \"+79001234570\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"auth",
+								"register"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Test Bet 1",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Кто выиграет матч\",\n  \"description\": \"Матч между командой А и командой Б состоится в субботу\",\n  \"startDate\": \"2024-12-31T10:00:00\",\n  \"duration\": 48\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/bets",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bets"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Test Bet 2",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Погода в выходные\",\n  \"description\": \"Будет ли дождь в субботу и воскресенье\",\n  \"startDate\": \"2024-12-30T10:00:00\",\n  \"duration\": 72\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/bets",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bets"
+							]
+						}
+					}
+				},
+				{
+					"name": "Create Test Bet 3",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{accessToken}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Курс валют\",\n  \"description\": \"Какой будет курс доллара к рублю через неделю\",\n  \"startDate\": \"2024-12-25T10:00:00\",\n  \"duration\": 168\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/bets",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"bets"
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8080/api",
+			"type": "string"
+		},
+		{
+			"key": "accessToken",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refreshToken",
+			"value": "",
+			"type": "string"
+		}
+	]
+} 
