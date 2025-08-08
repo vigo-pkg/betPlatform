@@ -4,7 +4,6 @@ services:
     name: betting-api
     env: docker
     buildCommand: docker build -t betting-api .
-    startCommand: docker run -p 8080:8080 betting-api
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: production
