@@ -2,7 +2,7 @@ services:
   # Backend Spring Boot API
   - type: web
     name: betting-api
-    env: java
+    runtime: java
     buildCommand: mvn clean package -DskipTests
     startCommand: java -jar target/betting-api-1.0.0.jar
     envVars:
@@ -32,7 +32,7 @@ services:
   # PostgreSQL Database
   - type: pserv
     name: betting-postgres
-    env: postgresql
+    runtime: postgresql
     plan: free
     ipAllowList: []
 
