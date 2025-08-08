@@ -32,9 +32,7 @@ services:
   # PostgreSQL Database
   - type: pserv
     name: betting-postgres
-    runtime: postgresql
     plan: free
-    ipAllowList: []
 
   # Frontend Static Site
   - type: web
