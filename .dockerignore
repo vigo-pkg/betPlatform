@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Maven
+target/
+!target/*.jar
+
+# Node.js (если есть)
+node_modules/
+npm-debug.log*
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Documentation
+*.md
+docs/
+
+# Test files
+src/test/
+
+# Temporary files
+*.tmp
+*.temp 
