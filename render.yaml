@@ -23,10 +23,6 @@ services:
         generateValue: true
       - key: SERVER_PORT
         value: 8080
-      - key: SPRING_JPA_HIBERNATE_DDL_AUTO
-        value: update
-      - key: SPRING_JPA_SHOW_SQL
-        value: false
 
   # PostgreSQL Database
   - type: pserv
@@ -38,11 +34,4 @@ services:
     name: betting-frontend
     env: static
     buildCommand: echo "Static site - no build needed"
-    staticPublishPath: .
-    routes:
-      - type: rewrite
-        source: /api/*
-        destination: https://betting-api.onrender.com/api/*
-    envVars:
-      - key: REACT_APP_API_URL
-        value: https://betting-api.onrender.com/api 
+    staticPublishPath: . 
