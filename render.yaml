@@ -17,8 +17,7 @@ services:
     env: static
     buildCommand: echo "Static site - no build needed"
     staticPublishPath: . 
-databases:
-  - type: postgresql
-    name: betting-postgres
-    plan: free
 
+databases:
+  - name: betting-postgres
+    plan: free
