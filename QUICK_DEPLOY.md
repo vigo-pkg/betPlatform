@@ -1,75 +1,78 @@
-# 🚀 Быстрое развертывание на Render
+# 🚀 Быстрый деплой на Render.com
 
-## ⚡ 5 минут до запуска
-
-### 1. Подготовка (2 минуты)
-
+## Шаг 1: Подготовка
 ```bash
-# Создайте GitHub репозиторий
-git init
+# Убедитесь, что код закоммичен в Git
 git add .
-git commit -m "Initial commit"
-git remote add origin https://github.com/your-username/betting-app.git
-git push -u origin main
+git commit -m "Prepare for deployment"
+git push origin main
 ```
 
-### 2. Настройка Render (2 минуты)
+## Шаг 2: Создание Blueprint на Render
 
-1. **Зарегистрируйтесь** на [render.com](https://render.com)
-2. **Подключите GitHub** аккаунт
-3. **Нажмите "New Web Service"**
-4. **Выберите ваш репозиторий**
+1. **Перейдите на [Render Dashboard](https://dashboard.render.com)**
+2. **Нажмите "New +" → "Blueprint"**
+3. **Подключите ваш Git репозиторий**
+4. **Render автоматически создаст:**
+   - ✅ PostgreSQL база данных
+   - ✅ Spring Boot Web Service
+   - ✅ Static Site для фронтенда
 
-### 3. Настройка переменных (1 минута)
+## Шаг 3: Проверка деплоя
 
-В Render Dashboard добавьте:
-
-```bash
-SPRING_PROFILES_ACTIVE=production
-JWT_SECRET=your-super-secret-key-here
-SERVER_PORT=8080
-```
-
-### 4. Создание базы данных
-
-1. **Нажмите "New PostgreSQL"**
-2. **Скопируйте URL** базы данных
-3. **Добавьте переменные**:
-
-```bash
-SPRING_DATASOURCE_URL=postgresql://postgres:5432/bettingdb
-SPRING_DATASOURCE_USERNAME=postgres
-SPRING_DATASOURCE_PASSWORD=postgres
-```
-
-### 5. Развертывание
-
-**Нажмите "Create Web Service"** - готово! 🎉
-
-## 🔗 Ваши URL
-
-- **Backend API**: `https://your-app.onrender.com/api`
+### Backend API
+- **Health Check**: `https://your-app.onrender.com/api/test/health`
 - **Swagger UI**: `https://your-app.onrender.com/api/swagger-ui.html`
-- **H2 Console**: `https://your-app.onrender.com/api/h2-console`
+- **API Base**: `https://your-app.onrender.com/api`
+
+### Frontend
+- **URL**: `https://your-frontend.onrender.com`
+
+## 🔧 Ручная настройка (если нужно)
+
+### Backend Web Service
+```
+Environment: Java
+Build Command: mvn clean package -DskipTests
+Start Command: java -jar target/betting-api-1.0.0.jar
+```
+
+### Переменные окружения
+```
+SPRING_PROFILES_ACTIVE=production
+SPRING_DATASOURCE_URL=<from_database>
+SPRING_DATASOURCE_USERNAME=<from_database>
+SPRING_DATASOURCE_PASSWORD=<from_database>
+JWT_SECRET=<generate_random_secret>
+SERVER_PORT=8080
+SPRING_JPA_HIBERNATE_DDL_AUTO=update
+SPRING_JPA_SHOW_SQL=false
+```
 
 ## 🧪 Тестирование
 
+### Создание тестовых пользователей
 ```bash
-# Создание тестовых пользователей
 curl -X POST https://your-app.onrender.com/api/test/create-users
-
-# Вход пользователя
-curl -X POST https://your-app.onrender.com/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"user1@test.com","password":"password123"}'
 ```
 
-## 📱 Frontend (опционально)
+### Проверка API
+```bash
+curl -X GET https://your-app.onrender.com/api/test/health
+```
 
-1. **Создайте Static Site** в Render
-2. **Выберите папку** с HTML файлами
-3. **Настройте роутинг** для API
+## 📊 Мониторинг
+
+- **Логи**: Render Dashboard → Your Service → Logs
+- **Метрики**: Render Dashboard → Your Service → Metrics
+- **Events**: Render Dashboard → Your Service → Events
+
+## 🔗 Полезные ссылки
+
+- [Render Documentation](https://render.com/docs)
+- [Spring Boot Deployment](https://spring.io/guides/gs/spring-boot/)
+- [PostgreSQL on Render](https://render.com/docs/databases)
 
 ---
 
-**Ваше приложение готово к использованию! 🚀** 
+**Готово! 🎉 Ваше приложение развернуто на Render.com** 
