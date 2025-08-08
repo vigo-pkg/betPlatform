@@ -10,10 +10,6 @@ services:
       - key: JWT_SECRET
         generateValue: true
 
-  # PostgreSQL Database
-  - type: pserv
-    name: betting-postgres
-    plan: free
 
   # Frontend Static Site
   - type: web
@@ -21,3 +17,8 @@ services:
     env: static
     buildCommand: echo "Static site - no build needed"
     staticPublishPath: . 
+databases:
+  - type: postgresql
+    name: betting-postgres
+    plan: free
+
