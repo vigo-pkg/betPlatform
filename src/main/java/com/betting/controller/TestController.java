@@ -6,13 +6,17 @@ import com.betting.repository.UserRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/test")
@@ -22,6 +26,17 @@ public class TestController {
     
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    
+    @GetMapping("/health")
+    @Operation(summary = "Health check", description = "Проверка состояния приложения")
+    public ResponseEntity<Map<String, Object>> healthCheck() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "UP");
+        response.put("timestamp", System.currentTimeMillis());
+        response.put("service", "betting-api");
+        response.put("version", "1.0.0");
+        return ResponseEntity.ok(response);
+    }
     
     @PostMapping("/create-users")
     @Operation(summary = "Создание тестовых пользователей", description = "Создает 5 тестовых пользователей")
