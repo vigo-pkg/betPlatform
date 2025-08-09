@@ -9,6 +9,18 @@ let authToken = localStorage.getItem('authToken');
 let currentPage = 0;
 let pageSize = 12;
 
+function getAuthHeaders() {
+  return authToken ? { Authorization: `Bearer ${authToken}` } : {};
+}
+
+function clearAuthAndShowLogin(msg) {
+  if (msg) alert(msg);
+  localStorage.removeItem('authToken');
+  authToken = null;
+  currentUser = null;
+  showAuthSection();
+}
+
 function initApp() {
   setupEventListeners();
   if (authToken) {
@@ -18,30 +30,30 @@ function initApp() {
           showMainContent();
           loadBets();
         } else {
-          showAuthSection();
+          clearAuthAndShowLogin();
         }
       })
-      .catch(() => showAuthSection());
+      .catch(() => clearAuthAndShowLogin());
   } else {
     showAuthSection();
   }
 }
 
-// Инициализация приложения (надежный запуск независимо от момента загрузки скрипта)
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initApp);
 } else {
   initApp();
 }
 
-// Валидация токена против backend
 async function validateToken() {
   try {
     const res = await fetch(`${API_BASE_URL}/auth/validate`, {
       method: 'GET',
-      headers: { 'Authorization': `Bearer ${authToken}` }
+      headers: { ...getAuthHeaders() }
     });
-    if (!res.ok) return false;
+    if (!res.ok) {
+      return false;
+    }
     const user = await res.json();
     currentUser = user;
     return true;
@@ -50,16 +62,12 @@ async function validateToken() {
   }
 }
 
-// Настройка обработчиков событий
 function setupEventListeners() {
-  // Форма входа
   const loginForm = document.getElementById('loginForm');
   if (loginForm && !loginForm._bound) {
     loginForm.addEventListener('submit', handleLogin);
     loginForm._bound = true;
   }
-
-  // Кнопки навигации
   const loginBtn = document.getElementById('loginBtn');
   if (loginBtn && !loginBtn._bound) {
     loginBtn.addEventListener('click', showAuthSection);
@@ -67,7 +75,6 @@ function setupEventListeners() {
   }
   const registerBtn = document.getElementById('registerBtn');
   if (registerBtn && !registerBtn._bound) {
-    // Открывается через data-bs-атрибут
     registerBtn._bound = true;
   }
   const confirmRegisterBtn = document.getElementById('confirmRegisterBtn');
@@ -80,8 +87,6 @@ function setupEventListeners() {
     logoutBtn.addEventListener('click', handleLogout);
     logoutBtn._bound = true;
   }
-
-  // Создание пари
   const createBetBtn = document.getElementById('createBetBtn');
   if (createBetBtn && !createBetBtn._bound) {
     createBetBtn.addEventListener('click', showCreateBetModal);
@@ -92,8 +97,6 @@ function setupEventListeners() {
     saveBetBtn.addEventListener('click', createBet);
     saveBetBtn._bound = true;
   }
-
-  // Фильтры и поиск (серверная фильтрация)
   const statusFilter = document.getElementById('statusFilter');
   if (statusFilter && !statusFilter._bound) {
     statusFilter.addEventListener('change', () => { currentPage = 0; loadBets(); });
@@ -113,7 +116,6 @@ function setupEventListeners() {
   }
 }
 
-// Обработка входа (REST, JWT)
 async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('email').value.trim();
@@ -143,7 +145,6 @@ async function handleLogin(e) {
   }
 }
 
-// Обработка регистрации через REST
 async function handleRegister() {
   const firstName = document.getElementById('regFirstName').value.trim();
   const lastName = document.getElementById('regLastName').value.trim();
@@ -175,15 +176,10 @@ async function handleRegister() {
   }
 }
 
-// Обработка выхода
 async function handleLogout() {
-  localStorage.removeItem('authToken');
-  authToken = null;
-  currentUser = null;
-  showAuthSection();
+  clearAuthAndShowLogin();
 }
 
-// Показать секцию аутентификации
 function showAuthSection() {
   document.getElementById('authSection').classList.remove('d-none');
   document.getElementById('mainContent').classList.add('d-none');
@@ -191,7 +187,6 @@ function showAuthSection() {
   document.getElementById('logoutBtn').classList.add('d-none');
 }
 
-// Показать основной контент
 function showMainContent() {
   document.getElementById('authSection').classList.add('d-none');
   document.getElementById('mainContent').classList.remove('d-none');
@@ -202,7 +197,6 @@ function showMainContent() {
   }
 }
 
-// Загрузка пари через REST (Page<BetResponse>)
 async function loadBets() {
   try {
     const params = new URLSearchParams();
@@ -214,8 +208,12 @@ async function loadBets() {
     params.set('size', String(pageSize));
 
     const res = await fetch(`${API_BASE_URL}/bets?${params.toString()}`, {
-      headers: authToken ? { 'Authorization': `Bearer ${authToken}` } : {}
+      headers: { ...getAuthHeaders() }
     });
+    if (res.status === 401 || res.status === 403) {
+      clearAuthAndShowLogin('Сессия истекла. Войдите снова.');
+      return;
+    }
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const page = await res.json();
     bets = Array.isArray(page) ? page : (page.content || []);
@@ -227,7 +225,6 @@ async function loadBets() {
   }
 }
 
-// Отображение пари
 function displayBets(betsToShow) {
   const betsList = document.getElementById('betsContainer');
   betsList.innerHTML = '';
@@ -241,7 +238,6 @@ function displayBets(betsToShow) {
   });
 }
 
-// Создание карточки пари
 function createBetCard(bet) {
   const col = document.createElement('div');
   col.className = 'col-md-6 col-lg-4';
@@ -299,10 +295,13 @@ function formatDate(val) {
 
 function openBet(betId) { window.open(`bet-detail.html?id=${betId}`, '_self'); }
 
-function showCreateBetModal() { new bootstrap.Modal(document.getElementById('createBetModal')).show(); }
+function showCreateBetModal() {
+  if (!authToken) { clearAuthAndShowLogin('Чтобы создать пари, войдите в систему.'); return; }
+  new bootstrap.Modal(document.getElementById('createBetModal')).show();
+}
 
-// Создать пари через REST
 async function createBet() {
+  if (!authToken) { clearAuthAndShowLogin('Чтобы создать пари, войдите в систему.'); return; }
   const title = document.getElementById('betTitle').value;
   const description = document.getElementById('betDescription').value;
   const startDate = document.getElementById('startDate').value;
@@ -311,9 +310,10 @@ async function createBet() {
   try {
     const res = await fetch(`${API_BASE_URL}/bets`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', ...(authToken ? { 'Authorization': `Bearer ${authToken}` } : {}) },
+      headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
       body: JSON.stringify({ title, description, startDate, duration })
     });
+    if (res.status === 401 || res.status === 403) { clearAuthAndShowLogin('Сессия истекла. Войдите снова.'); return; }
     if (!res.ok) {
       let msg = `HTTP ${res.status}`; try { const d = await res.json(); if (d.message) msg = d.message; } catch(_) {}
       alert('Ошибка создания пари: ' + msg);

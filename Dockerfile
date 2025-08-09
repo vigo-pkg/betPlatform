@@ -36,6 +36,7 @@ ENV SPRING_PROFILES_ACTIVE=production
 ENV SERVER_PORT=8080
 ENV SPRING_JPA_HIBERNATE_DDL_AUTO=update
 ENV SPRING_JPA_SHOW_SQL=false
+ENV SERVER_SERVLET_CONTEXT_PATH=/api
 
 # Запускаем приложение с production профилем
 CMD ["java", "-Dspring.profiles.active=production", "-jar", "target/betting-api-1.0.0.jar"] 
