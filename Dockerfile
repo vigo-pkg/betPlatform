@@ -31,5 +31,11 @@ USER javauser
 # Открываем порт
 EXPOSE 8080
 
-# Запускаем приложение
-CMD ["java", "-jar", "target/betting-api-1.0.0.jar"] 
+# Устанавливаем переменные окружения по умолчанию для production
+ENV SPRING_PROFILES_ACTIVE=production
+ENV SERVER_PORT=8080
+ENV SPRING_JPA_HIBERNATE_DDL_AUTO=update
+ENV SPRING_JPA_SHOW_SQL=false
+
+# Запускаем приложение с production профилем
+CMD ["java", "-Dspring.profiles.active=production", "-jar", "target/betting-api-1.0.0.jar"] 
